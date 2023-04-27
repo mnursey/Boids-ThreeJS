@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "publish": "vite build && git add * && git commit -a -m \"Publish commit\" && git push && firebase deploy"
   }
 }
