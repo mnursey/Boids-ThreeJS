@@ -140,7 +140,7 @@ function main() {
     const protectedRange = 8.0;
     const centeringFactor = 0.0005;
     const avoidFactor = 0.01;
-    const obstaceFactor = 0.005;
+    const obstacleFactor = 0.003;
     const matchingFactor = 0.03;
     const maxSpeed = 1.0;
     const minSpeed = 0.5;
@@ -149,7 +149,11 @@ function main() {
     const biasVal = 0.001;
     const spawnRadius = worldBounds / 2;
     const numberOfBoids = 500;
+    const numberAttractedToObstacles = 250;
     const numberOfObstacles = 15;
+
+    const obstacleAttractionFactor = 0.001;
+    const obstacleAttractionDistanceRatio = 0.3;
 
     function getRandomColor() {
         var letters = '0123456789ABCDEF';
@@ -199,7 +203,7 @@ function main() {
     }
 
     let boids = [];
-
+    
     for(let i = 0; i < numberOfBoids; i++) {
         boids.push(makeBoidInstance(getRandomColor()));
     }
@@ -241,6 +245,8 @@ function main() {
         boids.forEach((boidA, ndxA) => {
 
             let obstacleVector = new THREE.Vector3();
+            let obstacleAttractionVector = new THREE.Vector3();
+
             let closeVector = new THREE.Vector3();
             let avgVelocity = new THREE.Vector3();
             let avgPosition = new THREE.Vector3();
@@ -273,6 +279,15 @@ function main() {
                 if (boidA.position.distanceTo(obstacle.position) - obstacle.userData.radius < obstacleRange) {
                     // Seperation from obstacle
                     obstacleVector.add(boidA.position).sub(obstacle.position);
+                } else
+
+                // Check if boid is is attracted to obstacles
+                if(ndxA < numberAttractedToObstacles) {
+                    // Check if within attraction range
+                    if (boidA.position.distanceTo(obstacle.position) - obstacle.userData.radius < obstacleRange + obstacleAttractionDistanceRatio * obstacle.userData.radius) {
+                        // attraction from obstacle
+                        obstacleAttractionVector.sub(boidA.position).add(obstacle.position);
+                    }
                 }
             });
 
@@ -307,8 +322,9 @@ function main() {
 
             // Update new Velocity
             boidA.userData.velocity.add(closeVector.multiplyScalar(avoidFactor));
-            boidA.userData.velocity.add(obstacleVector.multiplyScalar(obstaceFactor));
-            
+            boidA.userData.velocity.add(obstacleVector.multiplyScalar(obstacleFactor));
+            boidA.userData.velocity.add(obstacleAttractionVector.multiplyScalar(obstacleAttractionFactor));
+
             if (numNeighbors > 0) {
                 avgVelocity.divideScalar(numNeighbors);
                 avgPosition.divideScalar(numNeighbors);
@@ -332,7 +348,7 @@ function main() {
             boidA.lookAt(new THREE.Vector3().addVectors(boidA.position, boidA.userData.velocity));
 
             // Update position
-            boidA.position.x += boidA.userData.velocity.x; // Why 0.12? because I was born on december 12th ;p
+            boidA.position.x += boidA.userData.velocity.x;
             boidA.position.y += boidA.userData.velocity.y;
             boidA.position.z += boidA.userData.velocity.z;
         });
