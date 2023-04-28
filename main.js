@@ -248,20 +248,22 @@ function main() {
 
             boids.forEach((boidB, ndxB) => {
 
-                // Check if within protected range
-                if (boidA.position.distanceTo(boidB.position) < protectedRange) {
-                    // Seperation
-                    closeVector.add(boidA.position).sub(boidB.position);
+                if(ndxA !== ndxB) {
+                    // Check if within protected range
+                    if (boidA.position.distanceTo(boidB.position) < protectedRange) {
+                        // Seperation
+                        closeVector.add(boidA.position).sub(boidB.position);
 
-                    // Check if within visable range
-                } else if (boidA.position.distanceTo(boidB.position) < visualRange) {
-                    numNeighbors += 1;
+                        // Check if within visable range
+                    } else if (boidA.position.distanceTo(boidB.position) < visualRange) {
+                        numNeighbors += 1;
 
-                    // Alignment
-                    avgVelocity.add(boidB.userData.velocity);
+                        // Alignment
+                        avgVelocity.add(boidB.userData.velocity);
 
-                    // Cohesion
-                    avgPosition.add(boidB.position);
+                        // Cohesion
+                        avgPosition.add(boidB.position);
+                    }
                 }
             });
 
@@ -310,10 +312,10 @@ function main() {
             if (numNeighbors > 0) {
                 avgVelocity.divideScalar(numNeighbors);
                 avgPosition.divideScalar(numNeighbors);
-            }
 
-            boidA.userData.velocity.add(avgVelocity.sub(boidA.userData.velocity).multiplyScalar(matchingFactor));
-            boidA.userData.velocity.add(avgPosition.sub(boidA.position).multiplyScalar(centeringFactor));
+                boidA.userData.velocity.add(avgVelocity.sub(boidA.userData.velocity).multiplyScalar(matchingFactor));
+                boidA.userData.velocity.add(avgPosition.sub(boidA.position).multiplyScalar(centeringFactor));    
+            }
 
             // Apply Speed Limits
             let speed = boidA.userData.velocity.length();
